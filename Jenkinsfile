@@ -20,7 +20,7 @@ pipeline {
         
         stage('Run Python Script') {
             steps {
-                sh 'source venv/bin/activate && python script.py'  // Run the script
+                sh 'source venv/bin/activate && python Fake_News_Classification.ipynb'  // Run the script
             }
         }
     }
