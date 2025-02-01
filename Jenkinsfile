@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://your-git-repo-url.git'  // Replace with your actual repo URL
+                git 'https://github.com/Udhairam/FakeNewsDetection.git'  // Replace with your actual repo URL
             }
         }
         
