@@ -1,57 +1,36 @@
 pipeline {
     agent any
-
-    environment {
-        PYTHON_VERSION = '3.8' // Modify if needed
-    }
-
+    
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
+            steps {
+                git 'https://your-git-repo-url.git'  // Replace with your actual repo URL
+            }
+        }
+        
+        stage('Setup Python Environment') {
             steps {
                 script {
-                    echo 'Cloning the repository...'
-                    checkout scm
+                    sh 'python3 -m venv venv'  // Create virtual environment
+                    sh 'source venv/bin/activate'  // Activate virtual environment
+                    sh 'pip install -r requirements.txt || echo "No requirements.txt found"'  // Install dependencies if available
                 }
             }
         }
-
-        stage('Set up Python') {
+        
+        stage('Run Python Script') {
             steps {
-                script {
-                    echo 'Setting up Python environment...'
-                    sh 'python3 --version'
-                    sh 'pip install --upgrade pip'
-                    sh 'pip install notebook pandas numpy' // Add other dependencies if needed
-                }
-            }
-        }
-
-        stage('Execute Notebook') {
-            steps {
-                script {
-                    echo 'Converting and executing the notebook...'
-                    sh 'jupyter nbconvert --to script *.ipynb' // Convert .ipynb to .py
-                    sh 'python3 *.py' // Execute the converted Python script
-                }
-            }
-        }
-
-        stage('Archive Results') {
-            steps {
-                script {
-                    echo 'Archiving output...'
-                    archiveArtifacts artifacts: '**/*.ipynb, **/*.py', fingerprint: true
-                }
+                sh 'source venv/bin/activate && python script.py'  // Run the script
             }
         }
     }
-
+    
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline executed successfully!'
         }
         failure {
-            echo 'Pipeline failed. Check logs for errors.'
+            echo 'Pipeline failed! Check the logs.'
         }
     }
 }
