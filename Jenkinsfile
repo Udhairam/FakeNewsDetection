@@ -1,36 +1,57 @@
 pipeline {
     agent any
-    
+
+    environment {
+        PYTHON_VERSION = '3.8' // Modify if needed
+    }
+
     stages {
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/Udhairam/FakeNewsDetection.git'  // Replace with your actual repo URL
-            }
-        }
-        
-        stage('Setup Python Environment') {
+        stage('Checkout') {
             steps {
                 script {
-                    sh 'python3 -m venv venv'  // Create virtual environment
-                    sh 'source venv/bin/activate'  // Activate virtual environment
-                    sh 'pip install -r requirements.txt || echo "No requirements.txt found"'  // Install dependencies if available
+                    echo 'Cloning the repository...'
+                    checkout scm
                 }
             }
         }
-        
-        stage('Run Python Script') {
+
+        stage('Set up Python') {
             steps {
-                sh 'source venv/bin/activate && python Fake_News_Classification.py'  // Run the script
+                script {
+                    echo 'Setting up Python environment...'
+                    sh 'python3 --version'
+                    sh 'pip install --upgrade pip'
+                    sh 'pip install notebook pandas numpy' // Add other dependencies if needed
+                }
+            }
+        }
+
+        stage('Execute Notebook') {
+            steps {
+                script {
+                    echo 'Converting and executing the notebook...'
+                    sh 'jupyter nbconvert --to script *.ipynb' // Convert .ipynb to .py
+                    sh 'python3 *.py' // Execute the converted Python script
+                }
+            }
+        }
+
+        stage('Archive Results') {
+            steps {
+                script {
+                    echo 'Archiving output...'
+                    archiveArtifacts artifacts: '**/*.ipynb, **/*.py', fingerprint: true
+                }
             }
         }
     }
-    
+
     post {
         success {
-            echo 'Pipeline executed successfully!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline failed! Check the logs.'
+            echo 'Pipeline failed. Check logs for errors.'
         }
     }
 }
